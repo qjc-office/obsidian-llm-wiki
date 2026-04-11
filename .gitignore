@@ -1,0 +1,19 @@
+# Obsidian
+.obsidian/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp
+*.tmp
+*.bak
+*~
+
+# Editor
+.vscode/
+.idea/
+
+# Claude local settings
+.claude/settings.local.json

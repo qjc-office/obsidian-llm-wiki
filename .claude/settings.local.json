@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(rm -rf inspool-wiki-en/commands)",
+      "Bash(rm -rf inspool-wiki-en/skills)",
+      "Bash(cp .codex/skills/zh/ingest_raw/SKILL.md .claude/commands/zh/ingest_raw.md)",
+      "Bash(rm .claude/commands/ingest_raw.md)",
+      "Bash(git add:*)"
+    ]
+  }
+}
