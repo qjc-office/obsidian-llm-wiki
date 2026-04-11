@@ -39,59 +39,32 @@ Karpathy 提出的核心思想很重要：不要每次提问都让 LLM 从原始
 - 支持用户手动分类移动 `concepts / entities / synthesis` 页面
 - 增加 lint 健康检查，用于发现旧路径残留、弱证据结论、缺失关系字段等问题
 
-## 目录结构
+## 快速开始
 
-```text
-.claude/
-├─ commands/              # Claude Code 命令
-└─ skills/                # Obsidian 官方 skill（通用）
-.codex/
-└─ skills/
-   ├─ {core}/             # 核心 skill（5 个）
-   └─ {obsidian}/         # Obsidian 官方 skill（通用，5 个）
-inspool-wiki-zh/
-├─ AGENTS.md
-├─ CLAUDE.md
-├─ raw/
-│  ├─ unprocessed/
-│  ├─ processed/
-│  ├─ assets/
-│  ├─ index.md
-│  └─ README.md
-└─ wiki/
-   ├─ sources/
-   ├─ entities/
-   ├─ concepts/
-   ├─ synthesis/
-   ├─ meta/
-   ├─ index.md
-   └─ log.md
-```
+### 1. 复制到 Obsidian Vault
 
-目录职责：
+将 `inspool-wiki-zh/` 复制到你的 Obsidian Vault 中。
 
-- `.claude/commands/`：Claude Code 命令模板。
-- `.codex/skills/`：Codex 核心 skill + Obsidian 官方 skill。
-- `.claude/skills/`：Obsidian 官方提供的通用 skill。
-- `raw/`：原始资料层。原文默认只读，允许维护少量流程元数据。
-- `wiki/`：结构化知识层。来源页、实体页、概念页、综合页都在这里。
-- `AGENTS.md` / `CLAUDE.md`：代理执行规则入口。
+### 2. 配置代理
 
-## 推荐采集方式
+让你的代理读取规则文件：
 
-最推荐的采集方式是使用 **Obsidian Web Clipper**。
+- Codex: `inspool-wiki-zh/AGENTS.md`
+- Claude: `inspool-wiki-zh/CLAUDE.md`
 
-标准做法：
+### 3. 安装 Obsidian Web Clipper
 
-1. 安装 Obsidian Web Clipper 浏览器扩展
-2. 把剪藏保存目录配置到 `inspool-wiki-zh/raw/unprocessed/`
-3. 剪藏网页后，让代理从 `raw/unprocessed/` 开始 ingest
+[Obsidian Web Clipper](https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf) 是一个 Chrome 浏览器扩展，用于将网页一键剪藏为 Markdown 保存到你的 Obsidian Vault。
 
-可选建议：
+- 在 Chrome Web Store 中搜索 "Obsidian Web Clipper" 或点击上方链接安装
+- 安装后在扩展设置中将保存目录配置为 `inspool-wiki-zh/raw/unprocessed/`
 
-- 如果文章图片有价值，可以把附件下载到 `raw/assets/`
-- 尽量保留原始标题、原始链接、日期等上下文
-- raw 文件正文尽量不要人工改写
+### 4. 开始使用
+
+1. 用 Obsidian Web Clipper 剪藏第一篇文章
+2. 运行 `ingest_raw`
+3. 审阅后运行 `approve_ingest`
+4. 后续持续用 `query_wiki`、`inspool` 和 `lint_wiki` 维护这个 wiki
 
 ## 标准工作流
 
@@ -167,6 +140,54 @@ inspool-wiki-zh/
 - 关系字段缺失
 - 用户分类迁移后的链接问题
 - `raw/index.md` 与实际目录状态是否一致
+
+## 目录结构
+
+```text
+.claude/
+├─ commands/              # Claude Code 命令
+└─ skills/                # Obsidian 官方 skill（通用）
+.codex/
+└─ skills/
+   ├─ {core}/             # 核心 skill（5 个）
+   └─ {obsidian}/         # Obsidian 官方 skill（通用，5 个）
+inspool-wiki-zh/
+├─ AGENTS.md
+├─ CLAUDE.md
+├─ raw/
+│  ├─ unprocessed/
+│  ├─ processed/
+│  ├─ assets/
+│  ├─ index.md
+│  └─ README.md
+└─ wiki/
+   ├─ sources/
+   ├─ entities/
+   ├─ concepts/
+   ├─ synthesis/
+   ├─ meta/
+   ├─ index.md
+   └─ log.md
+```
+
+目录职责：
+
+- `.claude/commands/`：Claude Code 命令模板。
+- `.codex/skills/`：Codex 核心 skill + Obsidian 官方 skill。
+- `.claude/skills/`：Obsidian 官方提供的通用 skill。
+- `raw/`：原始资料层。原文默认只读，允许维护少量流程元数据。
+- `wiki/`：结构化知识层。来源页、实体页、概念页、综合页都在这里。
+- `AGENTS.md` / `CLAUDE.md`：代理执行规则入口。
+
+## 推荐采集方式
+
+最推荐的采集方式是使用 **Obsidian Web Clipper**（见上方快速开始）。
+
+可选建议：
+
+- 如果文章图片有价值，可以把附件下载到 `raw/assets/`
+- 尽量保留原始标题、原始链接、日期等上下文
+- raw 文件正文尽量不要人工改写
 
 ## 使用规范
 
@@ -248,18 +269,6 @@ Claude Code 命令：
 
 - Codex 用户使用 [AGENTS.md](./inspool-wiki-zh/AGENTS.md)，配合 `.codex/skills/` 下的 skill。
 - Claude 用户使用 [CLAUDE.md](./inspool-wiki-zh/CLAUDE.md)，配合 `.claude/commands/` 下的命令。
-
-## 快速开始
-
-1. 将 `inspool-wiki-zh/` 复制到你的 Obsidian Vault
-2. 配置 Obsidian Web Clipper 保存到 `inspool-wiki-zh/raw/unprocessed/`
-3. 让你的代理读取规则文件：
-   - Codex: `inspool-wiki-zh/AGENTS.md`
-   - Claude: `inspool-wiki-zh/CLAUDE.md`
-4. 剪藏第一篇文章
-5. 运行 `ingest_raw`
-6. 审阅后运行 `approve_ingest`
-7. 后续持续用 `query_wiki`、`inspool` 和 `lint_wiki` 维护这个 wiki
 
 ## 推荐 Obsidian 插件
 

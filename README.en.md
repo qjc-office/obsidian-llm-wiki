@@ -39,58 +39,36 @@ Compared with the original "LLM Wiki" idea, this project keeps the three-layer m
 - compatibility with user-managed subfolders under `concepts / entities / synthesis`
 - a `lint_wiki` check for stale paths, weak claims, and missing relationship fields
 
-## Directory Layout
+## Quick Start
 
-```text
-.claude-en/
-├─ commands/              # Claude Code commands (English)
-└─ skills/                # Obsidian official skills (shared)
-.codex-en/
-└─ skills/
-   ├─ {core}/             # Core skills (5)
-   └─ {obsidian}/         # Obsidian official skills (shared, 5)
-inspool-wiki-en/
-├─ AGENTS.md
-├─ CLAUDE.md
-├─ raw/
-│  ├─ unprocessed/
-│  ├─ processed/
-│  ├─ assets/
-│  ├─ index.md
-│  └─ README.md
-└─ wiki/
-   ├─ sources/
-   ├─ entities/
-   ├─ concepts/
-   ├─ synthesis/
-   ├─ meta/
-   ├─ index.md
-   └─ log.md
-```
+### 1. Copy to Your Obsidian Vault
 
-Directory roles:
+Copy `inspool-wiki-en/` into your Obsidian vault.
 
-- `.claude-en/commands/`: Claude Code command templates.
-- `.codex-en/skills/`: Codex core skills + Obsidian official skills.
-- `.claude-en/skills/`: Obsidian official skills (shared).
-- `raw/`: source-material layer; the body is read-only by default, except for minimal workflow metadata.
-- `wiki/`: structured knowledge layer; source pages, entity pages, concept pages, and synthesis pages live here.
-- `AGENTS.md` / `CLAUDE.md`: rule entry points for agents.
+### 2. Rename Configuration Directories
 
-## Recommended Capture Flow
+**Rename `.claude-en/` to `.claude/` and `.codex-en/` to `.codex/`** so that the commands and skills take effect in your project directory.
 
-The preferred capture method is **Obsidian Web Clipper**.
+### 3. Configure Your Agent
 
-Recommended setup:
+Point your agent to the rule file:
 
-1. Install the Obsidian Web Clipper browser extension.
-2. Set the save folder to `inspool-wiki-en/raw/unprocessed/`.
+- Codex: `inspool-wiki-en/AGENTS.md`
+- Claude: `inspool-wiki-en/CLAUDE.md`
 
-Optional recommendations:
+### 4. Install Obsidian Web Clipper
 
-- if article images matter, download them into `raw/assets/`
-- preserve original titles, URLs, and dates whenever possible
-- avoid manually rewriting the body of raw notes
+[Obsidian Web Clipper](https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf) is a Chrome extension that saves web pages as Markdown directly into your Obsidian vault.
+
+- Search for "Obsidian Web Clipper" in the Chrome Web Store or click the link above to install it
+- After installing, configure the save folder to `inspool-wiki-en/raw/unprocessed/`
+
+### 5. Start Using
+
+1. Clip your first article with Obsidian Web Clipper
+2. Run `ingest_raw`
+3. Review the result, then run `approve_ingest`
+4. Keep the wiki alive with `query_wiki`, `inspool`, and `lint_wiki`
 
 ## Standard Workflow
 
@@ -166,6 +144,54 @@ Run `lint_wiki` periodically to check:
 - missing relationship fields
 - broken assumptions after user-driven page reclassification
 - mismatches between `raw/index.md` and the actual directory state
+
+## Directory Layout
+
+```text
+.claude-en/
+├─ commands/              # Claude Code commands (English)
+└─ skills/                # Obsidian official skills (shared)
+.codex-en/
+└─ skills/
+   ├─ {core}/             # Core skills (5)
+   └─ {obsidian}/         # Obsidian official skills (shared, 5)
+inspool-wiki-en/
+├─ AGENTS.md
+├─ CLAUDE.md
+├─ raw/
+│  ├─ unprocessed/
+│  ├─ processed/
+│  ├─ assets/
+│  ├─ index.md
+│  └─ README.md
+└─ wiki/
+   ├─ sources/
+   ├─ entities/
+   ├─ concepts/
+   ├─ synthesis/
+   ├─ meta/
+   ├─ index.md
+   └─ log.md
+```
+
+Directory roles:
+
+- `.claude-en/commands/`: Claude Code command templates.
+- `.codex-en/skills/`: Codex core skills + Obsidian official skills.
+- `.claude-en/skills/`: Obsidian official skills (shared).
+- `raw/`: source-material layer; the body is read-only by default, except for minimal workflow metadata.
+- `wiki/`: structured knowledge layer; source pages, entity pages, concept pages, and synthesis pages live here.
+- `AGENTS.md` / `CLAUDE.md`: rule entry points for agents.
+
+## Recommended Capture Flow
+
+The preferred capture method is **Obsidian Web Clipper** (see Quick Start above).
+
+Optional recommendations:
+
+- if article images matter, download them into `raw/assets/`
+- preserve original titles, URLs, and dates whenever possible
+- avoid manually rewriting the body of raw notes
 
 ## Working Rules
 
@@ -247,19 +273,6 @@ Shared Obsidian skills (provided by the official Obsidian project):
 
 - Codex users should start from [AGENTS.md](./inspool-wiki-en/AGENTS.md) with skills under `.codex-en/skills/`.
 - Claude users should start from [CLAUDE.md](./inspool-wiki-en/CLAUDE.md) with commands under `.claude-en/commands/`.
-
-## Quick Start
-
-1. Copy `inspool-wiki-en/` into your Obsidian vault.
-2. **Rename `.claude-en/` to `.claude/` and `.codex-en/` to `.codex/`** so that the commands and skills take effect in your project directory.
-3. Configure Obsidian Web Clipper to save into `inspool-wiki-en/raw/unprocessed/`.
-4. Point your agent to the rule file:
-   - Codex: `inspool-wiki-en/AGENTS.md`
-   - Claude: `inspool-wiki-en/CLAUDE.md`
-5. Clip your first article.
-6. Run `ingest_raw`.
-7. Review it, then run `approve_ingest`.
-8. Keep the wiki alive with `query_wiki`, `inspool`, and `lint_wiki`.
 
 ## Recommended Obsidian Plugins
 
