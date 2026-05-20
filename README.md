@@ -1,156 +1,158 @@
-[English](./README.en.md) | 中文
+[English](./README.en.md) | 한국어
 
 # Inspool Wiki for Obsidian
 
-首先感谢 [Andrej Karpathy 的《LLM Wiki》原文](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)。这个项目直接受那篇 idea file 启发而来。
+먼저 [Andrej Karpathy의 "LLM Wiki" 원문](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)에 감사드립니다. 이 프로젝트는 그 아이디어에서 직접 영감을 받았습니다.
 
-Karpathy 提出的核心思想很重要：不要每次提问都让 LLM 从原始文档里重新检索和拼装答案，而是让 LLM 持续维护一个介于你和原始资料之间的、可累计演化的 wiki。原文把这个模式讲得很清楚，也为这个项目提供了出发点。
+Karpathy가 제안한 핵심 사상은 단순하면서도 강력합니다: LLM에게 매번 원본 문서를 다시 읽고 일회성 답변을 만들게 하는 대신, LLM이 당신과 원본 자료 사이에서 지속적으로 진화하는 wiki를 유지·관리하게 한다는 것입니다.
 
-但这个项目不是对原文的机械照抄。它是在那个方向上，结合 Obsidian、中文知识库实践、Codex/Claude 双代理使用、人工确认归档，以及更明确的工作流约束后，做出的一个可直接落地的版本。
+Inspool Wiki는 그 아이디어를 Obsidian 친화적인 워크플로우로 구현한 것입니다. 명확한 디렉토리 구조, 에이전트 규칙, 검토 게이트, 그리고 구체적인 ingest 생명주기를 갖추고 있습니다.
 
-## 这个项目解决什么问题
+## 이 프로젝트가 해결하는 문제
 
-大多数人用 LLM 管资料，还是在做"每次重新理解一遍"的模式：
+대부분의 사람들은 아직도 LLM으로 문서 작업을 할 때 "매번 전부 다시 이해하는" 방식을 사용합니다:
 
-- 把一堆文档丢给模型
-- 提问时临时检索
-- 生成一次性回答
-- 回答结束后，结构没有留下来
+- 문서 더미를 모델에 던진다
+- 질문할 때 임시로 검색한다
+- 일회성 답변을 생성한다
+- 대화가 끝나면 구조는 남지 않는다
 
-这个项目走的是另一条路：
+이 프로젝트는 다른 방향을 선택합니다:
 
-- 原始资料进入 `raw/`
-- LLM 把资料逐步沉淀到 `wiki/`
-- 新资料到来时，不是重新开始，而是更新既有知识结构
-- 新问答如果有长期价值，可以继续回填到 wiki
+- 원본 자료는 `raw/`에 들어온다
+- LLM이 자료를 `wiki/`로 점진적으로 축적한다
+- 새 자료가 들어오면 처음부터 다시 시작하는 게 아니라, 기존 지식 구조를 업데이트한다
+- 높은 가치를 지닌 질문과 답변은 wiki에 역으로 기록될 수 있다
 
-结果是：知识不是每次临时拼出来的，而是被持续"编译"进一个长期存在的 Obsidian wiki。
+결과적으로: 지식은 매번 임시로 조합되는 것이 아니라, Obsidian wiki 안에 지속적으로 "컴파일"되어 축적됩니다.
 
-## 设计来源与本项目的增量改造
+## 원본 대비 이 프로젝트의 개선점
 
-相比 Karpathy 原文，这个项目保留了"raw sources + wiki + schema"三层结构，但加入了更明确的实践约束：
+Karpathy 원문과 비교했을 때, 이 프로젝트는 `raw + wiki + schema` 3계층 구조를 유지하면서 다음을 추가했습니다:
 
-- 面向 Obsidian 的目录结构和双链写法
-- 面向 Codex 的 [AGENTS.md](./inspool-wiki-zh/AGENTS.md) 和面向 Claude 的 [CLAUDE.md](./inspool-wiki-zh/CLAUDE.md)
-- 已封装好的 `commands/` 与 `skills/`，放在 `.claude/` 和 `.codex/` 目录下
-- 明确的 `unprocessed -> pending_review -> processed` 状态机
-- 用户确认后才归档 raw，而不是 ingest 后直接迁移
-- 支持小批量相关素材作为一个 ingest 单元
-- 支持用户手动分类移动 `concepts / entities / synthesis` 页面
-- 增加 lint 健康检查，用于发现旧路径残留、弱证据结论、缺失关系字段等问题
+- Obsidian 지향적 디렉토리 구조와 wiki 링크 스타일 (`[[이중 괄호 링크]]`)
+- Codex용 [AGENTS.md](./inspool-wiki-zh/AGENTS.md)와 Claude용 [CLAUDE.md](./inspool-wiki-zh/CLAUDE.md)
+- `.claude/`와 `.codex/` 디렉토리에 패키징된 재사용 가능한 `commands/`와 `skills/`
+- 명확한 `unprocessed -> pending_review -> processed` 상태 머신
+- 사용자 확인 후에만 raw 자료를 아카이브하는 검토 우선 흐름
+- 서로 관련된 소규모 자료 묶음을 하나의 ingest 단위로 처리하는 기능
+- `concepts / entities / synthesis` 아래 사용자가 직접 관리하는 서브폴더 호환
+- 오래된 경로 참조, 약한 결론, 관계 필드 누락 등을 감지하는 `lint_wiki` 검사
 
-## 快速开始
+## 빠른 시작
 
-### 1. 复制到 Obsidian Vault
+### 1. Obsidian Vault에 복사
 
-将 `inspool-wiki-zh/` 复制到你的 Obsidian Vault 中。
+`inspool-wiki-zh/`를 당신의 Obsidian Vault에 복사하세요. (영문 버전은 `inspool-wiki-en/`)
 
-### 2. 配置代理
+### 2. 에이전트 설정
 
-让你的代理读取规则文件：
+에이전트가 규칙 파일을 읽도록 설정하세요:
 
 - Codex: `inspool-wiki-zh/AGENTS.md`
 - Claude: `inspool-wiki-zh/CLAUDE.md`
 
-### 3. 安装 Obsidian Web Clipper
+**영문 버전 사용 시**: `.claude-en/`을 `.claude/`로, `.codex-en/`을 `.codex/`로 이름을 변경하세요.
 
-[Obsidian Web Clipper](https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf) 是一个 Chrome 浏览器扩展，用于将网页一键剪藏为 Markdown 保存到你的 Obsidian Vault。
+### 3. Obsidian Web Clipper 설치
 
-- 在 Chrome Web Store 中搜索 "Obsidian Web Clipper" 或点击上方链接安装
-- 安装后在扩展设置中将保存目录配置为 `inspool-wiki-zh/raw/unprocessed/`
+[Obsidian Web Clipper](https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf)는 웹 페이지를 Markdown으로 변환하여 Obsidian Vault에 바로 저장하는 Chrome 확장 프로그램입니다.
 
-### 4. 开始使用
+- Chrome Web Store에서 "Obsidian Web Clipper"를 검색하거나 위 링크를 클릭하여 설치
+- 설치 후 확장 설정에서 저장 폴더를 `inspool-wiki-zh/raw/unprocessed/`로 설정
 
-1. 用 Obsidian Web Clipper 剪藏第一篇文章
-2. 运行 `ingest_raw`
-3. 审阅后运行 `approve_ingest`
-4. 后续持续用 `query_wiki`、`inspool` 和 `lint_wiki` 维护这个 wiki
+### 4. 시작하기
 
-## 标准工作流
+1. Obsidian Web Clipper로 첫 번째 아티클을 수집
+2. `ingest_raw` 실행
+3. 결과를 검토한 후 `approve_ingest` 실행
+4. `query_wiki`, `inspool`, `lint_wiki`로 wiki를 지속적으로 관리
 
-### 1. 采集
+## 표준 워크플로우
 
-把原始资料放进 `raw/unprocessed/`。
+### 1. 수집 (Capture)
 
-素材可以是：
+원본 자료를 `raw/unprocessed/`에 넣습니다.
 
-- 网页剪藏
-- 文章或书摘
-- 会议纪要
-- PDF 转写稿
-- 其他长期有沉淀价值的 markdown 文档
+자료는 다음과 같은 것들이 될 수 있습니다:
+
+- 웹 클리핑
+- 아티클 또는 도서 발췌
+- 회의록
+- PDF 변환본
+- 장기적으로 축적할 가치가 있는 기타 Markdown 문서
 
 ### 2. Ingest
 
-运行 `ingest_raw`。
+`ingest_raw`를 실행합니다.
 
-它会做这些事：
+이것이 수행하는 작업:
 
-- 读取下一个 ingest 单元
-- 创建或更新来源页
-- 更新相关实体页、概念页、综合页
-- 更新 `wiki/index.md`
-- 写入 `wiki/log.md`
-- 更新 `raw/index.md`
-- 把本批 raw 标记为 `pending_review`
+- 다음 ingest 단위 선택
+- 소스 페이지 생성 또는 업데이트
+- 관련 엔티티 페이지, 개념 페이지, 합성 페이지 업데이트
+- `wiki/index.md` 업데이트
+- `wiki/log.md`에 기록 추가
+- `raw/index.md` 업데이트
+- 현재 raw 배치를 `pending_review`로 표시
 
-### 3. 审阅
+### 3. 검토 (Review)
 
-用户审阅这次 ingest 的结果。
+이번 ingest 결과를 검토합니다.
 
-重点看：
+주요 확인 사항:
 
-- 页面命名是否合理
-- 双链是否成立
-- 结论是否过强
-- 是否遗漏关键概念或实体
-- 来源支撑是否充分
+- 페이지 이름이 적절한가
+- 링크(이중 괄호 링크)가 유효한가
+- 결론이 과장되지 않았는가
+- 핵심 개념이나 엔티티를 빠뜨리지 않았는가
+- 근거가 충분한가
 
 ### 4. Approve
 
-如果确认本次 ingest 没问题，再运行 `approve_ingest`。
+ingest 결과가 올바르면 `approve_ingest`를 실행합니다.
 
-它会做这些事：
+이것이 수행하는 작업:
 
-- 把对应 raw 从 `pending_review` 更新为 `processed`
-- 将 raw 文件迁移到 `raw/processed/`
-- 回补来源页中的 raw 路径引用
-- 更新 `raw/index.md`
-- 写入 `wiki/log.md`
+- 해당 raw 파일 상태를 `pending_review`에서 `processed`로 변경
+- `raw/processed/`로 파일 이동
+- wiki 페이지의 raw 경로 참조 복구
+- `raw/index.md` 업데이트
+- `wiki/log.md`에 기록 추가
 
-这里的关键约束是：
+핵심 제약:
 
-**raw 的迁移必须由用户确认触发。**
+**raw 파일은 사용자의 명시적 확인 후에만 이동됩니다.**
 
 ### 5. Query
 
-日常提问时运行 `query_wiki`，优先基于现有 wiki 页面回答，而不是直接绕过 wiki 回到 raw。
+일상적인 질문 시 `query_wiki`를 실행하여, raw 자료로 바로 돌아가는 대신 기존 wiki 페이지를 우선 참조하여 답변합니다.
 
 ### 6. Inspool
 
-如果一次问答很有价值，就运行 `inspool`，把结果回填为新的 wiki 页面，通常优先进入 `wiki/synthesis/`。
+특히 가치 있는 답변이라면 `inspool`을 실행하여 wiki에 역으로 기록합니다. 보통 `wiki/synthesis/`에 새 페이지로 작성됩니다.
 
 ### 7. Lint
 
-定期运行 `lint_wiki`，检查：
+정기적으로 `lint_wiki`를 실행하여 다음을 확인합니다:
 
-- 孤立页面
-- 旧路径残留
-- 缺少来源支撑的强结论
-- 关系字段缺失
-- 用户分类迁移后的链接问题
-- `raw/index.md` 与实际目录状态是否一致
+- 고립된 페이지 (연결 없는 페이지)
+- 오래된 경로 참조
+- 소스 근거 없는 강한 결론
+- 관계 필드 누락
+- 사용자 페이지 재분류 후 깨진 가정
+- `raw/index.md`와 실제 디렉토리 상태 불일치
 
-## 目录结构
+## 디렉토리 구조
 
 ```text
 .claude/
-├─ commands/              # Claude Code 命令
-└─ skills/                # Obsidian 官方 skill（通用）
+├─ commands/              # Claude Code 명령어
+└─ skills/                # Obsidian 공식 skill (공용)
 .codex/
 └─ skills/
-   ├─ {core}/             # 核心 skill（5 个）
-   └─ {obsidian}/         # Obsidian 官方 skill（通用，5 个）
+   ├─ {core}/             # 핵심 skill (5개)
+   └─ {obsidian}/         # Obsidian 공식 skill (공용, 5개)
 inspool-wiki-zh/
 ├─ AGENTS.md
 ├─ CLAUDE.md
@@ -170,78 +172,78 @@ inspool-wiki-zh/
    └─ log.md
 ```
 
-目录职责：
+디렉토리 역할:
 
-- `.claude/commands/`：Claude Code 命令模板。
-- `.codex/skills/`：Codex 核心 skill + Obsidian 官方 skill。
-- `.claude/skills/`：Obsidian 官方提供的通用 skill。
-- `raw/`：原始资料层。原文默认只读，允许维护少量流程元数据。
-- `wiki/`：结构化知识层。来源页、实体页、概念页、综合页都在这里。
-- `AGENTS.md` / `CLAUDE.md`：代理执行规则入口。
+- `.claude/commands/`: Claude Code 명령어 템플릿
+- `.codex/skills/`: Codex 핵심 skill + Obsidian 공식 skill
+- `.claude/skills/`: Obsidian 공식 제공 공용 skill
+- `raw/`: 원본 자료 계층. 본문은 기본적으로 읽기 전용이며, 최소한의 워크플로우 메타데이터만 수정 허용
+- `wiki/`: 구조화된 지식 계층. 소스 페이지, 엔티티 페이지, 개념 페이지, 합성 페이지가 여기에 위치
+- `AGENTS.md` / `CLAUDE.md`: 에이전트 규칙 진입점
 
-## 推荐采集方式
+## 수집 방법
 
-最推荐的采集方式是使用 **Obsidian Web Clipper**（见上方快速开始）。
+권장 수집 방식은 **Obsidian Web Clipper**입니다 (빠른 시작 참조).
 
-可选建议：
+선택적 권장 사항:
 
-- 如果文章图片有价值，可以把附件下载到 `raw/assets/`
-- 尽量保留原始标题、原始链接、日期等上下文
-- raw 文件正文尽量不要人工改写
+- 아티클 이미지가 중요하다면 `raw/assets/`에 다운로드
+- 원본 제목, URL, 날짜를 최대한 보존
+- raw 노트의 본문은 수동으로 재작성하지 말 것
 
-## 使用规范
+## 사용 원칙
 
-为了让这个项目长期可维护，建议遵守这些规则：
+장기적으로 유지 가능한 프로젝트를 위해 다음 원칙을 지키세요:
 
-- raw 是事实来源层，不要随意改写正文
-- wiki 是知识综合层，允许持续重写和演化
-- 关键结论优先链接本地 `sources` 页面，而不是直接贴外部 URL
-- 不确定的内容写成"待确认"或"开放问题"
-- 当新资料与旧结论冲突时，要显式记录，不要静默覆盖
-- 用户可以手动给 `concepts / entities / synthesis` 建子文件夹分类，代理应兼容这种组织方式
-- 页面链接优先使用 Obsidian 双链，不要把深层路径写死为知识语义
+- `raw/`를 사실 소스 계층으로 취급하고 본문을 임의로 재작성하지 마세요
+- `wiki/`는 시간이 지남에 따라 진화할 수 있는 합성 계층으로 취급하세요
+- 핵심 주장은 외부 URL 대신 로컬 `sources` 페이지와 연결하세요
+- 불확실한 내용은 "확인 필요" 또는 열린 질문으로 표시하세요
+- 충돌하는 정보는 조용히 덮어쓰지 말고 명시적으로 기록하세요
+- 사용자가 `concepts / entities / synthesis` 아래에 서브폴더를 만드는 것을 허용하세요
+- 깊은 경로를 하드코딩하는 대신 Obsidian wiki 링크를 우선 사용하세요
 
-## Ingest 单元
+## Ingest 단위
 
-默认处理单位不是固定"一篇"，而是一个 ingest 单元。
+기본 처리 단위는 항상 "파일 하나"가 아닙니다. ingest 단위입니다.
 
-一个 ingest 单元可以是：
+ingest 단위는:
 
-- 一篇独立素材
-- 一组明确相关的小批量素材
+- 독립된 하나의 소스
+- 명확하게 연관된 소규모 소스 묶음
 
-判定优先级：
+그룹화 우선순위:
 
-1. `raw/unprocessed/` 下同一子文件夹
-2. 相同 `ingest_group`
-3. 用户明确说明需要一起处理
-4. 否则按单篇处理
+1. `raw/unprocessed/` 아래 같은 서브폴더의 파일들
+2. 동일한 `ingest_group`을 가진 파일들
+3. 사용자가 함께 처리하길 원한다고 명시한 파일들
+4. 그 외에는 파일 하나씩 처리
 
-建议每批次控制在 2 到 5 篇。
+권장 배치 크기: 2~5개 파일.
 
-## 图谱思路
+## 그래프 모델
 
-这个项目希望在 Obsidian 中形成可浏览的知识关系图谱。
+이 프로젝트는 Obsidian 안에 탐색 가능한 지식 그래프를 구축하는 것을 목표로 합니다.
 
-推荐分层：
+권장 계층:
 
-- `raw/`：原始资料节点
-- `wiki/sources/`：证据节点
-- `wiki/entities/`：实体节点
-- `wiki/concepts/`：概念节点
-- `wiki/synthesis/`：综合判断节点
+- `raw/`: 원본 소스 노드
+- `wiki/sources/`: 증거 노드
+- `wiki/entities/`: 엔티티 노드
+- `wiki/concepts/`: 개념 노드
+- `wiki/synthesis/`: 합성 또는 판단 노드
 
-关键原则：
+핵심 원칙:
 
-- 外部 URL 不是主图谱边
-- 主关系应当连接本地 markdown 页面
-- `sources` 是证据锚点
-- `supports / contradicts / related_*` 用于 frontmatter 结构化关系
-- 正文双链用于阅读和 Graph 展示
+- 외부 URL은 주요 그래프 엣지가 아닙니다
+- 중요한 관계는 로컬 Markdown 페이지를 연결해야 합니다
+- `sources`는 증거 앵커 계층 역할을 합니다
+- `supports / contradicts / related_*`는 frontmatter에서 구조화된 관계를 표현합니다
+- 본문 내 wiki 링크는 읽기 흐름과 그래프 시각화를 지원합니다
 
-## 命令与技能
+## 명령어와 Skill
 
-Codex skill：
+Codex skill:
 
 - [ingest_raw](./.codex/skills/ingest_raw/SKILL.md)
 - [approve_ingest](./.codex/skills/approve_ingest/SKILL.md)
@@ -249,7 +251,7 @@ Codex skill：
 - [inspool](./.codex/skills/inspool/SKILL.md)
 - [lint_wiki](./.codex/skills/lint_wiki/SKILL.md)
 
-Claude Code 命令：
+Claude Code 명령어:
 
 - [ingest_raw](./.claude/commands/ingest_raw.md)
 - [approve_ingest](./.claude/commands/approve_ingest.md)
@@ -257,7 +259,7 @@ Claude Code 命令：
 - [inspool](./.claude/commands/inspool.md)
 - [lint_wiki](./.claude/commands/lint_wiki.md)
 
-通用 Obsidian skill（来自 Obsidian 官方）：
+공용 Obsidian skill (Obsidian 공식 제공):
 
 - [defuddle](./.codex/skills/defuddle/SKILL.md)
 - [json-canvas](./.codex/skills/json-canvas/SKILL.md)
@@ -265,25 +267,37 @@ Claude Code 命令：
 - [obsidian-cli](./.codex/skills/obsidian-cli/SKILL.md)
 - [obsidian-markdown](./.codex/skills/obsidian-markdown/SKILL.md)
 
-## Codex 与 Claude 的使用方式
+## Codex와 Claude 사용 방식
 
-- Codex 用户使用 [AGENTS.md](./inspool-wiki-zh/AGENTS.md)，配合 `.codex/skills/` 下的 skill。
-- Claude 用户使用 [CLAUDE.md](./inspool-wiki-zh/CLAUDE.md)，配合 `.claude/commands/` 下的命令。
+- Codex 사용자는 [AGENTS.md](./inspool-wiki-zh/AGENTS.md)를 시작점으로, `.codex/skills/` 아래의 skill을 사용하세요.
+- Claude 사용자는 [CLAUDE.md](./inspool-wiki-zh/CLAUDE.md)를 시작점으로, `.claude/commands/` 아래의 명령어를 사용하세요.
 
-## 推荐 Obsidian 插件
+## 권장 Obsidian 플러그인
 
-| 插件 | 作用 |
-|------|------|
-| **Claudian** | 在 Obsidian 内调用 Claude，配合本项目命令直接在编辑器中完成 ingest、query 等操作 |
-| **Templater** | 模板引擎，用于快速创建符合本项目结构约定的来源页、实体页、概念页等 |
-| **Dataview** | 基于 frontmatter 字段生成动态查询视图，方便浏览 `supports`、`contradicts` 等关系 |
-| **Outliner** | 增强列表和大纲体验，适合 wiki 页面的层级结构和折叠浏览 |
-| **Another Quick Switcher** | 增强快速跳转，支持模糊搜索和双链跳转，提高 wiki 页面间导航效率 |
-| **File Explorer Note Count** | 在文件管理器中显示每个文件夹下的笔记数量，直观掌握 `sources/`、`entities/` 等目录的积累情况 |
-| **Custom Attachment Location** | 自定义附件保存路径，配合本项目把图片统一存到 `raw/assets/` |
+| 플러그인 | 역할 |
+|---------|------|
+| **Claudian** | Obsidian 내에서 Claude를 직접 호출. 이 프로젝트의 명령어를 사용하여 에디터 안에서 ingest, query 등의 워크플로우를 바로 실행 |
+| **Templater** | 이 프로젝트의 규칙에 맞는 소스 페이지, 엔티티 페이지, 개념 페이지, 합성 페이지를 빠르게 생성하는 템플릿 엔진 |
+| **Dataview** | frontmatter 필드 기반 동적 쿼리 뷰. `supports`, `contradicts` 등의 관계를 탐색하는 데 유용 |
+| **Outliner** | 향상된 목록 및 개요 경험. wiki 페이지의 계층 구조와 접기 탐색에 적합 |
+| **Another Quick Switcher** | 퍼지 검색과 wiki 링크 점프를 지원하는 향상된 빠른 전환기. wiki 페이지 간 탐색 속도 향상 |
+| **File Explorer Note Count** | 파일 탐색기에서 폴더별 노트 수를 표시. `sources/`, `entities/` 등 디렉토리의 축적 현황을 직관적으로 파악 |
+| **Custom Attachment Location** | 사용자 정의 첨부 파일 저장 경로. 이미지를 `raw/assets/`에 일관되게 저장하도록 설정 |
 
-## 适合继续扩展的方向
+## 다음 확장 방향
 
-- 增加更细的 graph 关系约束
-- 增加领域化页面模板
-- 针对 Claude / Codex 继续优化各自的命令封装
+- 더 세밀한 그래프 관계 제약 추가
+- 도메인별 페이지 템플릿 추가
+- Claude와 Codex 각각에 맞는 프롬프트 최적화
+
+---
+
+## QJC 적용 메모
+
+본 fork는 QJC(퀀텀점프클럽) 1인기업의 LLM Wiki 시스템 베이스로 사용됩니다.
+
+- 적용 범위: Strict 2 vault (대표 / 개인)
+- 핵심 패턴: Karpathy `raw/ + wiki/ + schema/CLAUDE.md` 3중 구조 유지
+- 변형 사항: Phase 0(grep) → Phase 1(임베딩) → Phase 2(자동화) 단계적 도입
+- 적용 spec: `/Users/sangrok/docs/superpowers/specs/2026-05-20-obsidian-llm-wiki-design.md`
+- fork 일자: 2026-05-20
