@@ -1,0 +1,46 @@
+Source inventory:
+  detected: .claude - primary source
+    dir: .claude/commands
+    dir: .claude/skills
+Migration inventory:
+  inactive: instruction files - none found
+  active: skills - 5 found
+    - defuddle
+    - json-canvas
+    - obsidian-bases
+    - obsidian-cli
+    - obsidian-markdown
+  active: command sources - 5 found
+    provider: source command (5)
+      - approve_ingest
+      - ingest_raw
+      - inspool
+      - lint_wiki
+      - query_wiki
+  inactive: subagents - none found
+Migration surfaces:
+  inactive: AGENTS.md - No supported instruction file found.
+  active: skills - 10 skill(s) converted.
+  inactive: MCP config - No settings or MCP config found.
+  inactive: subagents - No subagents found.
+Migration report:
+  rewritten: .agents/skills/defuddle/SKILL.md - Converted Claude skill.
+  rewritten: .agents/skills/json-canvas/SKILL.md - Converted Claude skill.
+  rewritten: .agents/skills/obsidian-bases/SKILL.md - Converted Claude skill.
+  rewritten: .agents/skills/obsidian-cli/SKILL.md - Converted Claude skill.
+  rewritten: .agents/skills/obsidian-markdown/SKILL.md - Converted Claude skill.
+  manual_fix_required: .agents/skills/source-command-approve_ingest/SKILL.md - Converted source command `approve_ingest` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-ingest_raw/SKILL.md - Converted source command `ingest_raw` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-inspool/SKILL.md - Converted source command `inspool` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-lint_wiki/SKILL.md - Converted source command `lint_wiki` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-query_wiki/SKILL.md - Converted source command `query_wiki` to a single-file Codex skill; review invocation and template placeholder semantics.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/source-command-ingest_raw - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/defuddle - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/obsidian-bases - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/obsidian-markdown - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/source-command-approve_ingest - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/source-command-lint_wiki - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/obsidian-cli - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/json-canvas - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/source-command-query_wiki - Existing Codex skill will be replaced.
+  overwritten: /Users/sangrok/qjc-office/obsidian-llm-wiki/.agents/skills/source-command-inspool - Existing Codex skill will be replaced.
